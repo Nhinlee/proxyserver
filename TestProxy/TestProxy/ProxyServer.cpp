@@ -14,21 +14,13 @@
 #define new DEBUG_NEW
 #endif
 
-
-bool IsEndHeader(string a)
-{
-	int n = a.size();
-	if (n < 4)
-		return false;
-	if (a[n - 4] == '\r' && a[n - 3] == '\n' && a[n - 2] == '\r' && a[n - 1] == '\n')
-		return true;
-	else return false;
-}
 // The one and only application object
 
 CWinApp theApp;
 
 using namespace std;
+
+
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
@@ -73,7 +65,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 			ProxySocket.Close();
 			return FALSE;
 		}
-		char request[5001] = { 0 }, dname[1001], ip[16], body_res[5001] = { 0 }, header_res[1001] = { 0 };
+		char request[5000] = { 0 }, dname[1000], ip[16], body_res[5000] = { 0 }, header_res[1000] = { 0 };
 		while(1)
 		{
 			CSocket Connector;
@@ -94,11 +86,12 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 					cout << request << "\n\n";
 				}
 				//
+				if (!IsGETMethod(request))
+					continue;
 				if (IsHTTPs(request))
 				{
 					cout << "is HTTPS" << endl;
 					continue;
-					
 				}
 				//
 				if (GetDomainName(request, dname) == false)
@@ -127,21 +120,21 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				}
 				revd = Proxy_Server.Send(request, revd, 0);
 
-
 				// Nhan va gui ve lai cho client:
-				string head;
-				int id = 0;
-				while (!IsEndHeader(head))
+				//string head;
+				int id = 0, endhead = 0;
+				while (endhead <4)
 				{
 					Proxy_Server.Receive(header_res + id, 1, 0);
-					head.push_back(header_res[id]);
+					//head.push_back(header_res[id]);
 					cout << header_res[id];
+					if (header_res[id] == '\r' || header_res[id] == '\n')
+						endhead++;
+					else endhead = 0;
 					id++;
 				}
 				Connector.Send(header_res, id, 0);
 				cout << "Xong header roi nhe !" << endl << endl;
-
-
 
 				id = 0;
 				while ((revd = Proxy_Server.Receive(body_res, 5000, 0)) > 0)

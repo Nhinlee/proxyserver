@@ -39,3 +39,9 @@ bool IsHTTPs(char *request)
 	}
 	return false;
 }
+bool IsGETMethod(char *request)
+{
+	if (request[0] == 'G' && request[1] == 'E' && request[2] == 'T')
+		return true;
+	return false;
+}
